@@ -1,0 +1,121 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+
+
+struct renk {
+	char harf[3];
+};
+
+char mesaj[10000];
+renk Renkler[27];
+renk sifrelenmis_mesaj[10000];
+
+int mesaj_uzunlugu;
+void Secme();
+void Sifreleme();
+void Dosya_oku();
+void Desifreleme();
+void tabloyu_bas();
+
+int main()
+{	
+	Dosya_oku();
+	
+	return 0;
+}
+
+void Dosya_oku()
+{
+	char dosya_1[20];
+	FILE**fp;
+	fopen_s(fp, dosya_1, "r");
+	for (int i = 0; i < 27; i++) 
+	{
+		fscanf_s(fp, "%s", Renkler[i].harf);
+	}
+
+	fclose(fp);
+	Secme();
+}
+
+void Secme()
+{
+	int secim;
+	printf("Lutfen yapilacak olan islemi seciniz:\n1 : Sifreleme\n2 : Desifreleme\nSeçim:");
+	scanf_s("%d", &secim);
+	switch (secim) 
+	{
+	case 1:
+		Sifreleme();
+		break;
+	case 2:
+		Desifreleme();
+		break;
+	}
+}
+
+void Sifreleme()
+{
+	char mesaj[10000];
+	printf("Lütfen mesajýnýzý giriniz:");
+	scanf_s("\n%[^\n]", mesaj);
+	mesaj_uzunlugu = strlen(mesaj);
+
+	for (int i = 0; i < strlen(mesaj); i++) 
+	{
+		if (mesaj[i] <= 90 && mesaj[i] >= 65) 
+		{
+			mesaj[i] += 32;
+		}
+		strcpy_s(sifrelenmis_mesaj[i].harf, Renkler[mesaj[i] - 97].harf);
+	}
+
+	printf("Þifrelenmiþ mesaj:");
+
+	for (int i = 0; i < mesaj_uzunlugu; i++) 
+	{
+		if (mesaj[i] == 32) 
+		{
+			printf("Rb ");
+		}
+		else 
+		{
+			printf("%s ", sifrelenmis_mesaj[i].harf);
+		}
+	}
+
+	printf("\n");
+	printf("Þifreli mesajýn uzunluðu:%d\n", mesaj_uzunlugu);
+}
+
+void Desifreleme()
+{
+	struct renk sifrelenmis_mesaj[10000];
+
+	printf("Mesaj uzunlugu giriniz :");
+	scanf_s("%d", &mesaj_uzunlugu);
+	
+	printf("Lütfen þifrelenmiþ mesajý girin:");
+	for (int i = 0; i < mesaj_uzunlugu; i++) 
+	{
+		scanf_s("%s", sifrelenmis_mesaj[i].harf);
+	}
+	for (int i = 0; i < mesaj_uzunlugu; i++) 
+	{
+		for (int j = 0; j < 27; j++) 
+		{
+			if (strcmp(sifrelenmis_mesaj[i].harf, Renkler[j].harf) == 0) 
+			{
+				mesaj[i] = j + 97;
+			}
+		}
+		if (mesaj[i] == '{') 
+		{
+			mesaj[i] = ' ';
+		}
+
+	}
+	printf("Mesajýn orjinal hali: %s\n", mesaj);
+}
