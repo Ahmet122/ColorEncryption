@@ -1,0 +1,172 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+public class Sifrele
+{
+    static string[] Renkler;
+    public static object CurrentDomain { get; private set; }
+
+    private static void Main(string[] args)
+    {
+        Dosya_oku();
+    }
+
+    static void Dosya_oku()
+    {
+        Console.Write("Lutfen renk dosyasýnýn adýný giriniz:");
+
+        string Dosya_Adi = Console.ReadLine();
+        FileStream fs = new FileStream(Dosya_Adi, FileMode.Open, FileAccess.Read);
+        StreamReader sw = new StreamReader(fs);
+        Renkler = new string[27];
+
+        for (int i = 0; i < 27; i++)
+        {
+            Renkler[i] = sw.ReadLine();
+        }
+        Renkler[26] = "Rb";
+        
+        fs.Close();
+        Secme();
+        
+    }
+
+    static void Secme()
+    {
+        Console.WriteLine("Lutfen yapilacak olan islemi seciniz:\n1 : Sifreleme\n2 : Desifreleme\n3 : Dosya Sifreleme\n4 : Dosya Desifreleme");
+        Console.Write("Seçim:");
+        int secim = Convert.ToInt32(Console.ReadLine());
+        switch (secim)
+        {
+            case 1:
+                Console.Write("Lutfen mesajinizi giriniz:");
+                string mesaj = Console.ReadLine();
+                string[] sifrelenmis_mesaj = Mesaj_Sifreleme(mesaj, mesaj.Length);
+                Console.Write("Sifrelenmis mesaj:");
+                for(int i = 0; i < sifrelenmis_mesaj.Length; i++)
+                {
+                    Console.Write(sifrelenmis_mesaj[i] + " ");
+                }
+                Console.Write("\nMesaj uzunlugu: " + sifrelenmis_mesaj.Length);
+                Console.ReadKey();
+                break;
+            case 2:
+                Console.Write("Mesaj uzunlugu giriniz :");
+                int mesaj_uzunlugu = int.Parse(Console.ReadLine());
+                Console.Write("Lutfen sifrelenmis mesajý giriniz:");
+                string Renk_Kodlari = Console.ReadLine();
+                sifrelenmis_mesaj = Renk_Kodlari.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                char[] orjinal_mesaj = Mesaj_Desifreleme(sifrelenmis_mesaj, mesaj_uzunlugu);
+                Console.Write("Mesajýn orjinal hali:" + new string(orjinal_mesaj));
+                Console.ReadKey();
+                break;
+            case 3:
+                if (!File.Exists("Sifrelenmis_Dosya.txt"))
+                {
+                    File.Create("Sifrelenmis_Dosya.txt");
+                }
+                Dosya_Sifreleme();
+                break;
+            case 4:
+                Dosya_Desifreleme();
+                break;
+        }
+    }
+
+    static string[] Mesaj_Sifreleme(string mesaj, int mesaj_uzunlugu)
+    {        
+        mesaj = mesaj.ToLower();
+        string[] sifrelenmis_mesaj = new string[mesaj_uzunlugu];
+        for (int i = 0; i < mesaj.Length; i++)
+        {
+            if (mesaj[i] == 32)
+            {
+                sifrelenmis_mesaj[i] = Renkler[26] + ' ';
+            }
+            else
+            {
+                sifrelenmis_mesaj[i] = Renkler[mesaj[i] - 97] + ' ';
+            }
+        }
+        return sifrelenmis_mesaj;
+    }
+
+
+    static char[] Mesaj_Desifreleme(string[] sifrelenmis_mesaj, int mesaj_uzunlugu)
+    {
+        char[] orjinal_mesaj = new char[mesaj_uzunlugu];
+        
+        for (int i = 0; i < mesaj_uzunlugu; i++)
+        {
+            for (int j = 0; j < 27; j++)
+            {
+                if (String.Compare(sifrelenmis_mesaj[i], Renkler[j]) == 0)
+                {
+                    if (j == 26)
+                    {
+                        orjinal_mesaj[i] = ' ';
+                    }
+                    else
+                    {
+                        orjinal_mesaj[i] = (char)(j + 97);
+                    }
+                }
+            }
+        }
+
+        return orjinal_mesaj;
+    }
+
+    static void Dosya_Sifreleme()
+    {
+        Console.Write("Lutfen sifrelenecek dosyanýn adini giriniz:");
+        string Dosya_yolu = Console.ReadLine();
+        StreamWriter Sifrelenmis_Dosya = new StreamWriter("Sifrelenmis_Dosya.txt");
+        FileStream fs = new FileStream(Dosya_yolu, FileMode.Open, FileAccess.Read);
+        StreamReader sw = new StreamReader(fs);
+        string[] satir = File.ReadAllLines(Dosya_yolu);
+        fs.Close();
+        
+        for (int i = 0; i < satir.Length; i++)
+        {
+            string[] Sifrelenmis_Satir = Mesaj_Sifreleme(satir[i], satir[i].Length);
+
+            for (int j = 0; j < Sifrelenmis_Satir.Length; j++)
+            {
+                Sifrelenmis_Dosya.Write(Sifrelenmis_Satir[j]);
+            }
+            Sifrelenmis_Dosya.Write("\n");
+        }
+        Sifrelenmis_Dosya.Close();
+        Console.Write("Sifreleme basarýyla tamamlandý!");
+        Console.ReadKey();
+    }
+    
+	static void Dosya_Desifreleme()
+    {
+        Console.Write("Lutfen desifrelenecek dosyanýn adini giriniz:");
+        string Dosya_yolu = Console.ReadLine();
+        FileStream fs = new FileStream(Dosya_yolu, FileMode.Open, FileAccess.Read);
+        StreamReader sw = new StreamReader(fs);
+        string[] satir = File.ReadAllLines(Dosya_yolu);
+        fs.Close();
+        StreamWriter Desifrelenmis_Dosya = new StreamWriter("Desifrelenmis_Dosya.txt");
+
+        for (int i = 0; i < satir.Length; i++)
+        {
+            string[] sifrelenmis_satir = satir[i].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            
+            char[] Desifrelenmis_Satir = Mesaj_Desifreleme(sifrelenmis_satir, sifrelenmis_satir.Length);
+
+            Desifrelenmis_Dosya.Write(Desifrelenmis_Satir);
+            Desifrelenmis_Dosya.Write("\n");
+        }
+        Desifrelenmis_Dosya.Close();
+        Console.Write("Desifreleme basarýyla tamamlandý!");
+        Console.ReadKey();
+    }
+}
